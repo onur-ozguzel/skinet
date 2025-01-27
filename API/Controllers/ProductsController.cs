@@ -13,7 +13,7 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     {
         var spec = new ProductSpecification(specParams);
 
-        return Ok(await CreatePagedResults(repo, spec, specParams.PageIndex, specParams.PageSize));
+        return await CreatePagedResults(repo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")]
