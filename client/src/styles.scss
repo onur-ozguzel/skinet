@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
 
-@use "tailwindcss" as *;
+@import "tailwindcss";
 
 $customTheme: mat.define-theme();
 
