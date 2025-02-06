@@ -1,6 +1,5 @@
-import { ApplicationConfig, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, DEFAULT_CURRENCY_CODE, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -9,6 +8,7 @@ import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { InitService } from './core/services/init.service';
 import { lastValueFrom } from 'rxjs';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { registerLocaleData } from '@angular/common';
 
 function initializeApp() {
   const initService = inject(InitService);
@@ -30,6 +30,7 @@ export const appConfig: ApplicationConfig = {
       loadingInterceptor,
       authInterceptor
     ])),
-    provideAppInitializer(initializeApp)
+    provideAppInitializer(initializeApp),
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' }
   ]
 };
