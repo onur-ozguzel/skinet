@@ -1,9 +1,9 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Cart, CartItem } from '../../shared/models/cart';
+import { Cart, CartItem, Coupon } from '../../shared/models/cart';
 import { Product } from '../../shared/models/product';
-import { firstValueFrom, map, tap } from 'rxjs';
+import { firstValueFrom, map, Observable, tap } from 'rxjs';
 import { DeliveryMethod } from '../../shared/models/deliveryMethod';
 
 @Injectable({
@@ -24,7 +24,7 @@ export class CartService {
 
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = delivery ? delivery?.price : 0;
-    const discount = 0;
+    const discount = subtotal * ((cart.coupon?.percentOff ?? 0) / 100);
 
     return {
       subtotal,
@@ -43,12 +43,16 @@ export class CartService {
     )
   }
 
-  setCart(cart: Cart) {
+  setCart(cart: Cart): Observable<Cart> {
     return this.http.post<Cart>(this.baseUrl + 'cart', cart).pipe(
       tap({
         next: cart => this.cart.set(cart)
-      })      
+      })
     )
+  }
+
+  applyDiscount(code: string): Observable<Coupon> {
+    return this.http.get<Coupon>(this.baseUrl + 'coupons/' + code).pipe();
   }
 
   async addItemToCart(item: CartItem | Product, quantity = 1) {

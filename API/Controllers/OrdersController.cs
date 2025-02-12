@@ -55,7 +55,8 @@ public class OrdersController(ICartService cartService, IUnitOfWork unit) : Base
             Subtotal = items.Sum(x => x.Price * x.Quantity),
             PaymentSummary = orderDto.PaymentSummary,
             PaymentIntentId = cart.PaymentIntentId,
-            BuyerEmail = email
+            BuyerEmail = email,
+            Discount = orderDto.Discount ?? 0
         };
 
         unit.Repository<Order>().Add(order);
