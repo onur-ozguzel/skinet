@@ -5,16 +5,34 @@ using Stripe;
 
 namespace Infrastructure.Services;
 
-public class PaymentService(
-    IConfiguration config,
-    ICartService cartService,
-    IUnitOfWork unit) : IPaymentService
+public class PaymentService : IPaymentService
 {
-    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    private readonly ICartService _cartService;
+    private readonly IUnitOfWork _unit;
+
+    public PaymentService(IConfiguration config, ICartService cartService, IUnitOfWork unit)
     {
         StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"];
+        _cartService = cartService;
+        _unit = unit;
+    }
 
-        var cart = await cartService.GetCartAsync(cartId)
+    public async Task<string> RefundPayment(string paymentIntentId)
+    {
+        var refundOptions = new RefundCreateOptions
+        {
+            PaymentIntent = paymentIntentId
+        };
+
+        var refundService = new RefundService();
+        var result = await refundService.CreateAsync(refundOptions);
+
+        return result.Status;
+    }
+
+    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        var cart = await _cartService.GetCartAsync(cartId)
             ?? throw new Exception("Cart unavailable");
 
         var shippingPrice = await GetShippingPriceAsync(cart) ?? 0;
@@ -31,7 +49,7 @@ public class PaymentService(
         var total = subtotal + shippingPrice;
 
         await CreateUpdatePaymentIntentAsync(cart, total);
-        await cartService.SetCartAsync(cart);
+        await _cartService.SetCartAsync(cart);
         return cart;
     }
 
@@ -83,7 +101,7 @@ public class PaymentService(
     {
         foreach (var item in cart.Items)
         {
-            var productItem = await unit.Repository<Core.Entities.Product>().GetByIdAsync(item.ProductId);
+            var productItem = await _unit.Repository<Core.Entities.Product>().GetByIdAsync(item.ProductId);
             if (productItem == null) throw new Exception("Product unavailable");
 
             if (item.Price != productItem.Price)
@@ -97,7 +115,7 @@ public class PaymentService(
     {
         if (!cart.DeliveryMethodId.HasValue) return null;
 
-        var deliveryMethod = await unit.Repository<DeliveryMethod>().GetByIdAsync(cart.DeliveryMethodId.Value);
+        var deliveryMethod = await _unit.Repository<DeliveryMethod>().GetByIdAsync(cart.DeliveryMethodId.Value);
 
         if (deliveryMethod == null) return null;
         return (long)deliveryMethod.Price * 100;
