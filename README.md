@@ -4,7 +4,7 @@ Created by Neil Cummings' [Learn to build an e-commerce app with .Net Core and A
 
 Thanks for sharing this beautiful content.
 
-# techstack
+## techstack
 - .NET Core 9
 - Angular 19
 - [upstash](https://upstash.com/) for free a Redis instance
