@@ -9,3 +9,4 @@ Thanks for sharing this beautiful content.
 - Angular 19
 - [upstash](https://upstash.com/) for free a Redis instance
 - [Microsoft Azure](https://portal.azure.com/) for a free WebApp and SQL server instance
+- [Stripe](https://dashboard.stripe.com) for payment tests
