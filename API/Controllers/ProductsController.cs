@@ -1,3 +1,4 @@
+using API.RequestHelpers;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
@@ -8,6 +9,7 @@ namespace API.Controllers;
 
 public class ProductsController(IUnitOfWork unit) : BaseApiController
 {
+    [Cache(timeToLiveSeconds: 600)]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery] ProductSpecParams specParams)
     {
@@ -16,6 +18,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return await CreatePagedResults(unit.Repository<Product>(), spec, specParams.PageIndex, specParams.PageSize);
     }
 
+    [Cache(timeToLiveSeconds: 600)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
@@ -26,6 +29,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return product;
     }
 
+    [InvalidateCache(pattern: "api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
@@ -40,6 +44,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return BadRequest("Problem creating product");
     }
 
+    [InvalidateCache(pattern: "api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateProduct(int id, Product product)
@@ -59,6 +64,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return BadRequest("Problem updating the product");
     }
 
+    [InvalidateCache(pattern: "api/products|")]
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteProduct(int id)
@@ -77,6 +83,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return BadRequest("Problem deleting the product");
     }
 
+    [Cache(timeToLiveSeconds: 10000)]
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
     {
@@ -85,6 +92,7 @@ public class ProductsController(IUnitOfWork unit) : BaseApiController
         return Ok(await unit.Repository<Product>().ListAsync(spec));
     }
 
+    [Cache(timeToLiveSeconds: 10000)]
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
     {
